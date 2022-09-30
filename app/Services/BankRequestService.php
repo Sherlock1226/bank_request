@@ -57,19 +57,19 @@ class BankRequestService
             'cust_pwd' => $config['custPwd'],
             'acno' => $config['acno'],
             'from_date' => $from_date,
-            'to_date' => $to_date ,
+            'to_date' => $to_date,
             'xml' => "y",
             'txdate8' => "y"
         ];
 
-        $response = $this->request_GlobalMyB2B($config['url'],$data);
+        $response = $this->request_GlobalMyB2B($config['url'], $data);
 
 
         return $response;
     }
 
 
-    function request_GlobalMyB2B($url,$data)
+    function request_GlobalMyB2B($url, $data)
     {
         $curl = curl_init();
 
@@ -100,25 +100,30 @@ class BankRequestService
             return $response;
         }
     }
-    public function argSAPData(array $args)
-    {
 
-//        foreach ($args as $key){
-//
-//        }
-//
-//        $data = [
-//            'cust_id' => $config['custId'],
-//            'cust_nickname' => $config['custNickname'],
-//            'cust_pwd' => $config['custPwd'],
-//            'acno' => $config['acno'],
-//            'from_date' => $from_date,
-//            'to_date' => $to_date ,
-//            'xml' => "y",
-//            'txdate8' => "y"
-//        ];
-//
-//
-//        return $data;
+    public function argSAPData(array $bankRSdata): array
+    {
+        $data = [];
+        foreach ($bankRSdata as $key) {
+            $data[] = [
+                'BANKID' => '013', //銀行代號 先寫死
+                'BACCNO' => $key['BACCNO'], //銀行帳號
+                'TXDATE' => $key['TX_DATE'], //交易日期
+                'TXTIME' => $key['TX_TIME'], //交易時間 (hhmmssss)
+                'TX_SEQNO' => $key['TX_SEQNO'], //交易序號
+                'TX_IDNO' => $key['TX_IDNO'],//交易代號
+                'CHKNO' => $key['CHNO'],//支票號碼
+                'DC' => $key['DC'],//借貸
+                'AMOUNT' => $key['AMOUNT'], //交易金額
+                'BAMOUNT' => $key['BAMOUNT'], //帳戶餘額
+                'MEMO1' => $key['MEMO1'],//備註一
+                'MEMO2' => $key['MEMO2'],//備註二
+                'XBANKID' => $key['BANKID'],//對方行
+                'ACCNAME' => $key['ACCNAME'],//戶名
+                'CURY' => $key['CURY'],//幣別
+            ];
+        }
+
+        return $data;
     }
 }

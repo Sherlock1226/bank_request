@@ -23,3 +23,4 @@ Route::get('users', function()
 });
 
 Route::get('/bank', 'App\Http\Controllers\BankRequestController@getInfo');
+Route::get('/sap', 'App\Http\Controllers\SapController@loginSap');

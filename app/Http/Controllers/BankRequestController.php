@@ -8,12 +8,10 @@ use Illuminate\Support\Facades\Log;
 use App\Services\BankRequestService;
 
 
-
 class BankRequestController extends Controller
 {
 
     protected $bankRequestService;
-
 
 
     /**
@@ -31,6 +29,7 @@ class BankRequestController extends Controller
     {
         try {
 //            $args = $request->all();
+
             $args = [
                 'from_date' => 20220901,
                 'to_date' => 20220921
@@ -38,13 +37,15 @@ class BankRequestController extends Controller
 
             $response = $this->bankRequestService->getBankResponse($args);
             $xml = simplexml_load_string($response);
-            $json = json_encode($xml);
-            $rs_array = json_decode($json,TRUE);
-            print_r($rs_array);
-            if($rs_array['error_id'] == 0 && empty($rs_array['error_msg'])){
-                $sap_data = $this->bankRequestService->argSAPData($args);
-            }else{
-                print_r($rs_array);
+            $code = $xml->attributes();
+
+            $array = json_decode(json_encode($xml), TRUE);
+
+            if ($code['error_id'] == 0 && empty($code['error_msg'])) {
+                $sap_data = $this->bankRequestService->argSAPData($array['TXDETAIL']);
+                print_r($sap_data);
+            } else {
+                echo $code['error_msg'];
             }
 
         } catch (Exception $e) {

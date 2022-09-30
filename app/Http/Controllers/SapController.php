@@ -27,6 +27,7 @@ class SapController extends Controller
 
     public function loginSap()
     {
+        phpinfo();exit();
         try {
             //登入資訊
             $login = $this->sapService->sapLogin();
