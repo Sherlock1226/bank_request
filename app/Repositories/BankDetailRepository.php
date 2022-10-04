@@ -4,8 +4,10 @@ namespace App\Repositories;
 
 use App\Interfaces\EloquentRepositoryInterface;
 use App\Models\BankDetail;
-use Illuminate\Database\Eloquent\Collection;
+use http\Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class BankDetailRepository extends BaseRepository implements EloquentRepositoryInterface
 {
@@ -17,7 +19,7 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
     /**
      * BaseRepository constructor.
      *
-     * @param Model $model
+     * @param BankDetail $model
      */
     public function __construct(BankDetail $model)
     {
@@ -27,33 +29,49 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
 
     /**
      * @param array $data
-     * @return void
+     * @return JsonResponse
+     * @throws \Exception
      */
-    public function saveData(array $data): void
+    public function saveData(array $data): JsonResponse
     {
-//        protected $fillable = [
-//        'BANKID',//銀行代號
-//        'BACCNO',//銀行帳號
-//        'TXDATE',//交易日期
-//        'TXTIME',//交易時間 (hhmmssss)
-//        'TXSEQNO',//交易序號
-//        'TXIDNO',//交易代號
-//        'CHKNO',//支票號碼
-//        'AMOUNT',//交易金額
-//        'SIGN',//交易金額正負號
-//        'BAMOUNT',//帳戶餘額
-//        'BSIGN',//帳戶餘額正負號
-//        'MEMO1',//備註一
-//        'MEMO2',//備註二
-//        'XBANKID',//對方行
-//        'CURY',//幣別
-//        'DC',//借貸別1:借;2:貸(存)
-//        'TX_SPEC',//交易說明
-//        'ACCNAME',//戶名
-//    ];
-        $this->BANKID = $data['BANKID'];
-        $this->model->save();
+        try {
 
+            $this->create($data);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage().' '.$data['TXSEQNO']);
+            return response()->json([
+                'error' => 'Cannot excecute insert',
+                'msg' => $e->getMessage(),
+                'TXSEQNO' => $data['TXSEQNO'],
+            ], 422);
+        }
+
+        return response()->json([
+            'msg' => 'success',
+        ], 200);
+    }
+
+    /**
+     * @param array $data
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function getData(array $data): JsonResponse
+    {
+        try {
+
+            $rs = $this->all();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage().' '.$data['TXSEQNO']);
+            return response()->json([
+                'error' => 'Cannot excecute query',
+                'msg' => $e->getMessage(),
+            ], 422);
+        }
+
+        return response()->json( $rs , 200);
     }
 
 }

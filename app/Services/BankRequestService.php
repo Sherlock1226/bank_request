@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Repositories\BankDetailRepository;
+
 //use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
@@ -127,11 +129,14 @@ class BankRequestService
         return $data;
     }
 
-    public function insertBankDetail(array $bankRSdata): array
+    /**
+     * @throws \Exception
+     */
+    public function insertBankDetail(array $bankRSdata): JsonResponse
     {
 
+        $rs = [];
         foreach ($bankRSdata as $key) {
-
             $data = [
                 'BANKID' => '013', //銀行代號 先寫死
                 'BACCNO' => $key['BACCNO'], //銀行帳號
@@ -139,23 +144,43 @@ class BankRequestService
                 'TXTIME' => $key['TX_TIME'], //交易時間 (hhmmssss)
                 'TXSEQNO' => $key['TX_SEQNO'] ?? '', //交易序號
                 'TXIDNO' => $key['TX_IDNO'] ?? '',//交易代號
-                'CHKNO' => $key['CHNO'],//支票號碼
-                'DC' => $key['DC'] ?? '',//借貸
+                'CHKNO' => !empty($key['CHNO']) ? $key['CHNO'] : '',//支票號碼
+                'DC' => !empty($key['DC']) ? $key['DC'] : '',//借貸
                 'AMOUNT' => $key['AMOUNT'], //交易金額
                 'BAMOUNT' => $key['BAMOUNT'], //帳戶餘額
-                'MEMO1' => $key['MEMO1'] ?? '',//備註一
+                'MEMO1' => !empty($key['MEMO1']) ? $key['MEMO1'] : '',//備註一
                 'MEMO2' => $key['MEMO2'] ?? '',//備註二
-                'XBANKID' => $key['BANKID'] ?? '',//對方行
-                'ACCNAME' => $key['ACCNAME'] ?? '',//戶名
+                'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行
+                'ACCNAME' => !empty($key['ACCNAME']) ? $key['ACCNAME'] : '',//戶名
                 'CURY' => $key['CURY'],//幣別
                 'SIGN' => $key['SIGN'],//交易金額正負號
                 'BSIGN' => $key['BSIGN'],//帳戶餘額正負號
-                'TX_SPEC' => $key['TX_SPEC'],//交易說明
+                'TX_SPEC' => !empty($key['TX_SPEC']) ? $key['TX_SPEC'] : '',//交易說明
             ];
-            $result = $this->bankDetailRepository->saveData($data);
-            dd($result);
+           $rs = $this->bankDetailRepository->saveData($data);
         }
 
-        return $result;
+        return $rs;
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function getBankDetail(array $args)
+    {
+        $from_date = $args['from_date'] ?? date('Ymd', strtotime("-1 days"));
+        $to_date = $args['to_date'] ?? date('Ymd', strtotime("-1 days"));
+
+        $data = [
+            'from_date' => $from_date,
+            'to_date' => $to_date,
+
+        ];
+
+        $rs = $this->bankDetailRepository->getData($data);
+
+        return $rs;
+    }
+
+
 }
