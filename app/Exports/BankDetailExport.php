@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\BankDetail;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -17,7 +18,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 
 class BankDetailExport implements
-    FromCollection, WithHeadings, WithMapping, WithColumnFormatting,WithEvents
+    FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithEvents,
+    ShouldAutoSize
+
 {
     /**
      * @return Collection
@@ -31,6 +34,7 @@ class BankDetailExport implements
     public function __construct($data)
     {
         $this->data = $data;
+//        print_r($this->data);
     }
 
     //陣列轉集合
@@ -42,8 +46,19 @@ class BankDetailExport implements
     //業務程式碼
     public function createData()
     {
+
+        $from_date = date('Y-m-d', strtotime($this->data['from_date'])) ?? date('Ymd', strtotime("-1 days"));
+        $to_date = date('Y-m-d', strtotime($this->data['to_date'])) ?? date('Ymd', strtotime("-1 days"));
+
         //todo 業務
-        return BankDetail::all();
+        return BankDetail::query()
+            ->where('BACCNO', $this->data['bank_acc'])
+            ->whereDate('TXDATE', '>=', $from_date)
+            ->whereDate('TXDATE', '<=', $to_date)
+            ->get();
+
+
+//        return json_decode($this->data,true);
     }
 
     /**
@@ -86,12 +101,18 @@ class BankDetailExport implements
     public function map($bankDetail): array
     {
         // TODO: Implement map() method.
+        $dt1 = $dt2 = 0;
+        if ($bankDetail->DC == 2) {
+            $dt2 = $bankDetail->SIGN . $bankDetail->AMOUNT;
+        } else {
+            $dt1 = $bankDetail->SIGN . $bankDetail->AMOUNT;
+        }
         return [
             $bankDetail->TXDATE,
-            $bankDetail->MEMO1.$bankDetail->TX_SPEC.$bankDetail->BACCNO.$bankDetail->MEMO2,
-            $bankDetail->SIGN.$bankDetail->AMOUNT,
-            $bankDetail->SIGN.$bankDetail->BAMOUNT,
-            $bankDetail->BSIGN.$bankDetail->BAMOUNT,
+            $bankDetail->MEMO1 . $bankDetail->TX_SPEC . $bankDetail->BACCNO . $bankDetail->MEMO2,
+            $dt1,
+            $dt2,
+            $bankDetail->BSIGN . $bankDetail->BAMOUNT,
 
         ];
     }
@@ -123,25 +144,25 @@ class BankDetailExport implements
     public function columnFormats(): array
     {
         return [
-            'A' => NumberFormat::FORMAT_DATE_DDMMYYYY
+            'A' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'C' => NumberFormat::FORMAT_NUMBER_00, //金額保留兩位小數
+            'D' => NumberFormat::FORMAT_NUMBER_00, //金額保留兩位小數
+            'E' => NumberFormat::FORMAT_NUMBER_00, //金額保留兩位小數
         ];
     }
 
-    /**
-     * @var BankDetail $bankDetail
-     */
+
     public function registerEvents(): array
     {
 
-        $bankDetail = new BankDetail();
         return [
-            AfterSheet::class => function(AfterSheet $event) use ($bankDetail) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getDelegate()->mergeCells('A1:E1');
                 $event->sheet->getDelegate()->mergeCells('A2:B2');
                 $event->sheet->getDelegate()->mergeCells('C2:E2');
 
                 $event->sheet->setCellValue("A2", "銀行名稱：國泰世華");
-                $event->sheet->setCellValue("C2", $bankDetail->BACCNO);
+                $event->sheet->setCellValue("C2", $this->data['bank_acc']);
 
 //                $event->sheet->getDelegate()->getStyle('A2:M2')
 //                    ->getFill()

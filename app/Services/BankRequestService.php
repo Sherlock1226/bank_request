@@ -151,7 +151,7 @@ class BankRequestService
                 'AMOUNT' => $key['AMOUNT'], //交易金額
                 'BAMOUNT' => $key['BAMOUNT'], //帳戶餘額
                 'MEMO1' => !empty($key['MEMO1']) ? $key['MEMO1'] : '',//備註一
-                'MEMO2' => $key['MEMO2'] ?? '',//備註二
+                'MEMO2' => !empty($key['MEMO2']) ? $key['MEMO2'] : '',//備註二
                 'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行
                 'ACCNAME' => !empty($key['ACCNAME']) ? $key['ACCNAME'] : '',//戶名
                 'CURY' => $key['CURY'],//幣別
@@ -159,7 +159,7 @@ class BankRequestService
                 'BSIGN' => $key['BSIGN'],//帳戶餘額正負號
                 'TX_SPEC' => !empty($key['TX_SPEC']) ? $key['TX_SPEC'] : '',//交易說明
             ];
-           $rs = $this->bankDetailRepository->saveData($data);
+            $rs = $this->bankDetailRepository->saveData($data);
         }
 
         return $rs;
@@ -170,8 +170,8 @@ class BankRequestService
      */
     public function getBankDetail(array $args): JsonResponse
     {
-        $from_date = date('Y-m-d',strtotime($args['from_date'])) ?? date('Ymd', strtotime("-1 days"));
-        $to_date =  date('Y-m-d',strtotime($args['to_date'])) ?? date('Ymd', strtotime("-1 days"));
+        $from_date = date('Y-m-d', strtotime($args['from_date'])) ?? date('Ymd', strtotime("-1 days"));
+        $to_date = date('Y-m-d', strtotime($args['to_date'])) ?? date('Ymd', strtotime("-1 days"));
 
         $data = [
             'from_date' => $from_date,

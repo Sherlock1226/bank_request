@@ -120,7 +120,14 @@ class BankRequestController extends Controller
     public function export()
     {
         try {
-            return Excel::download(new BankDetailExport($this->getDetail()), 'bank.xlsx');
+            //$args = $request->all();
+
+            $args = [
+                'from_date' => 20220906,
+                'to_date' => 20220906,
+                'bank_acc' => '048087009559'
+            ];
+            return Excel::download(new BankDetailExport($args), 'bank.xlsx');
         } catch (Exception $e) {
             dd($e);
         }
