@@ -8,6 +8,7 @@ use App\Repositories\BankDetailRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 
 class BankRequestService
@@ -60,8 +61,8 @@ class BankRequestService
             'acno' => $config['acno'],
             'from_date' => $from_date,
             'to_date' => $to_date,
-            'xml' => "y",
-            'txdate8' => "y"
+            'xml' => "Y",
+            'txdate8' => "Y"
         ];
 
         $response = $this->request_GlobalMyB2B($config['url'], $data);
@@ -136,11 +137,12 @@ class BankRequestService
     {
 
         $rs = [];
+
         foreach ($bankRSdata as $key) {
             $data = [
                 'BANKID' => '013', //銀行代號 先寫死
                 'BACCNO' => $key['BACCNO'], //銀行帳號
-                'TXDATE' => $key['TX_DATE'], //交易日期
+                'TXDATE' => Carbon::parse((string)$key['TX_DATE'])->format('Y-m-d'), //交易日期
                 'TXTIME' => $key['TX_TIME'], //交易時間 (hhmmssss)
                 'TXSEQNO' => $key['TX_SEQNO'] ?? '', //交易序號
                 'TXIDNO' => $key['TX_IDNO'] ?? '',//交易代號
@@ -166,15 +168,15 @@ class BankRequestService
     /**
      * @throws \Exception
      */
-    public function getBankDetail(array $args)
+    public function getBankDetail(array $args): JsonResponse
     {
-        $from_date = $args['from_date'] ?? date('Ymd', strtotime("-1 days"));
-        $to_date = $args['to_date'] ?? date('Ymd', strtotime("-1 days"));
+        $from_date = date('Y-m-d',strtotime($args['from_date'])) ?? date('Ymd', strtotime("-1 days"));
+        $to_date =  date('Y-m-d',strtotime($args['to_date'])) ?? date('Ymd', strtotime("-1 days"));
 
         $data = [
             'from_date' => $from_date,
             'to_date' => $to_date,
-
+            'bank_acc' => $args['bank_acc']
         ];
 
         $rs = $this->bankDetailRepository->getData($data);

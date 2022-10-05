@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exports\BankDetailExport;
 use App\Models\BankDetail;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use App\Services\BankRequestService;
 use Maatwebsite\Excel\Facades\Excel;
@@ -69,8 +71,9 @@ class BankRequestController extends Controller
 
             $args = [
                 'from_date' => 20220901,
-                'to_date' => 20221003
+                'to_date' => 20221003,
             ];
+
 
             $response = $this->bankRequestService->getBankResponse($args);
             $xml = simplexml_load_string($response);
@@ -94,21 +97,19 @@ class BankRequestController extends Controller
 
     }
 
-    public function getExcel()
+    public function getDetail()
     {
         $response = [];
         try {
 //            $args = $request->all();
 
             $args = [
-                'from_date' => 20220901,
-                'to_date' => 20220921
+                'from_date' => 20220906,
+                'to_date' => 20220906,
+                'bank_acc' => '048087009559'
             ];
 
             $response = $this->bankRequestService->getBankDetail($args);
-
-
-
         } catch (Exception $e) {
             Log::error($e);
         }
@@ -118,7 +119,11 @@ class BankRequestController extends Controller
 
     public function export()
     {
-        return Excel::download(new BankDetailExport($this->getExcel()), 'bank.xlsx');
+        try {
+            return Excel::download(new BankDetailExport($this->getDetail()), 'bank.xlsx');
+        } catch (Exception $e) {
+            dd($e);
+        }
     }
 
 }

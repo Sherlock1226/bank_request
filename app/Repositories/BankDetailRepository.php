@@ -7,6 +7,7 @@ use App\Models\BankDetail;
 use http\Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BankDetailRepository extends BaseRepository implements EloquentRepositoryInterface
@@ -60,8 +61,11 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
     public function getData(array $data): JsonResponse
     {
         try {
-
-            $rs = $this->all();
+            $rs = $this->model->query()
+                ->where('BACCNO', $data['bank_acc'])
+                ->whereDate('TXDATE', '>=', $data['from_date'])
+                ->whereDate('TXDATE', '<=', $data['to_date'])
+                ->get();
 
         } catch (\Exception $e) {
             Log::error($e->getMessage().' '.$data['TXSEQNO']);

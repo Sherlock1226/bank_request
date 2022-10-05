@@ -18,7 +18,7 @@ class CreateBankDetailTable extends Migration
             $table->timestamps();
             $table->integer('BANKID')->nullable()->comment('銀行代號');
             $table->bigInteger('BACCNO')->comment('銀行帳號');
-            $table->dateTime('TXDATE')->comment('交易日期');
+            $table->date('TXDATE')->comment('交易日期');
             $table->string('TXTIME')->comment('交易時間 (hhmmssss)');
             $table->string('TXSEQNO')->unique()->comment('交易序號');
             $table->string('TXIDNO')->comment('交易代號');

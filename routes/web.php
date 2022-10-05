@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Vtiful\Kernel\Excel;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,3 +27,5 @@ Route::get('/bank', 'App\Http\Controllers\BankRequestController@getInfo');
 Route::get('/callbank', 'App\Http\Controllers\BankRequestController@callBank');
 Route::get('/sap', 'App\Http\Controllers\SapController@loginSap');
 Route::get('/export', 'App\Http\Controllers\BankRequestController@export');
+Route::get('/getDetail', 'App\Http\Controllers\BankRequestController@getDetail');
+
