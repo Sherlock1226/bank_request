@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -19,7 +20,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class BankDetailExport implements
     FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithEvents,
-    ShouldAutoSize
+    ShouldAutoSize, WithColumnWidths
 
 {
     /**
@@ -34,7 +35,6 @@ class BankDetailExport implements
     public function __construct($data)
     {
         $this->data = $data;
-//        print_r($this->data);
     }
 
     //陣列轉集合
@@ -70,9 +70,11 @@ class BankDetailExport implements
         // TODO: Implement headings() method.
         //第一列為先放一個空白的資料，後面會取代掉
         return [
-            ['row1'],
+            ['戶名'],
             ['銀行名稱'],
-            ['日 期', '摘 要', '支   出(借)', '存   入(貸)', '結   存'],
+            [' 日   期 ', ' 摘  要 ', '支   出(借)', '存   入(貸)', '結   存'],
+            ['上年度結轉餘額'],
+
 //            ['日期', '銀行帳號', '交易序號', '交易代號', '支票號碼', '交易金額正負號', '交易金額', '帳戶餘額正負號', '帳戶餘額', '備註一', '備註二', '幣別', '交易說明']
 
         ];
@@ -89,7 +91,7 @@ class BankDetailExport implements
         $sheet->mergeCells("A2:F2");
 
         //在第一格中寫入的相關資料
-        $sheet->setCellValue("A1", '');
+        $sheet->setCellValue("A1", '偉柏工業');
         //在第二格中寫入的相關資料
         $sheet->setCellValue("A2", "銀行名稱：國泰世華");
 
@@ -102,18 +104,19 @@ class BankDetailExport implements
     {
         // TODO: Implement map() method.
         $dt1 = $dt2 = 0;
+        $amount = number_format($bankDetail->AMOUNT,2);
+        $bamount = number_format($bankDetail->BAMOUNT,2);
         if ($bankDetail->DC == 2) {
-            $dt2 = $bankDetail->SIGN . $bankDetail->AMOUNT;
+            $dt2 = $amount;
         } else {
-            $dt1 = $bankDetail->SIGN . $bankDetail->AMOUNT;
+            $dt1 = $amount;
         }
         return [
             $bankDetail->TXDATE,
             $bankDetail->MEMO1 . $bankDetail->TX_SPEC . $bankDetail->BACCNO . $bankDetail->MEMO2,
             $dt1,
             $dt2,
-            $bankDetail->BSIGN . $bankDetail->BAMOUNT,
-
+            $bamount,
         ];
     }
 
@@ -151,6 +154,18 @@ class BankDetailExport implements
         ];
     }
 
+    /*設定每一行的寬度*/
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 20,
+            'B' => 60,
+            'C' => 20,
+            'D' => 20,
+            'E' => 20,
+        ];
+    }
+
 
     public function registerEvents(): array
     {
@@ -160,18 +175,32 @@ class BankDetailExport implements
                 $event->sheet->getDelegate()->mergeCells('A1:E1');
                 $event->sheet->getDelegate()->mergeCells('A2:B2');
                 $event->sheet->getDelegate()->mergeCells('C2:E2');
+                $event->sheet->getDelegate()->mergeCells('A4:E4');
 
+                //设置区域单元格垂直居中
+                $event->sheet->getDelegate()->getStyle('A1:K1265')->getAlignment()->setVertical('center');
+
+                $event->sheet->setCellValue("A1", '偉柏工業');
                 $event->sheet->setCellValue("A2", "銀行名稱：國泰世華");
                 $event->sheet->setCellValue("C2", $this->data['bank_acc']);
 
-//                $event->sheet->getDelegate()->getStyle('A2:M2')
-//                    ->getFill()
-//                    ->setFillType(Fill::FILL_SOLID)
-//                    ->getStartColor()
-//                    ->setARGB('CECECE');
+                $event->sheet->getDelegate()->getStyle('A4:E4')
+                    ->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setARGB('CECECE');
+
+
             },
         ];
     }
 
 
+//    public function view(): View
+//    {
+//        // TODO: Implement view() method.
+//        return view('exports.bankDetail', [
+//            'bankDetail' => $this->createData()
+//        ]);
+//    }
 }

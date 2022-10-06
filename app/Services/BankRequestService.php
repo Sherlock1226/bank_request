@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BankAcc;
 use App\Repositories\BankDetailRepository;
 
 //use Illuminate\Http\Request;
@@ -31,8 +32,9 @@ class BankRequestService
         'custId' => '46399636',
         'custNickname' => 'program01',
         'custPwd' => 'Wi63699364',
-        'acno' => '048087009559'
+//        'acno' => '048087009559'
     ];
+    protected $bankAcc;
 
 
     public function __construct(BankDetailRepository $bankDetailRepository)
@@ -45,26 +47,25 @@ class BankRequestService
 
         $from_date = $args['from_date'] ?? date('Ymd', strtotime("-1 days"));
         $to_date = $args['to_date'] ?? date('Ymd', strtotime("-1 days"));
+        $acno = $args['acno'] ?? '048087009559';
 
         $config = [
             'url' => 'https://www.GlobalMyB2B.com/securities/TX10F0_TXT.aspx',
             'custId' => '46399636',
             'custNickname' => 'program01',
             'custPwd' => 'Wi63699364',
-            'acno' => '048087009559'
         ];
 
         $data = [
             'cust_id' => $config['custId'],
             'cust_nickname' => $config['custNickname'],
             'cust_pwd' => $config['custPwd'],
-            'acno' => $config['acno'],
+            'acno' => $acno,
             'from_date' => $from_date,
             'to_date' => $to_date,
             'xml' => "Y",
             'txdate8' => "Y"
         ];
-
         $response = $this->request_GlobalMyB2B($config['url'], $data);
 
 
@@ -139,6 +140,8 @@ class BankRequestService
         $rs = [];
 
         foreach ($bankRSdata as $key) {
+            $amount = ($key['AMOUNT']/100);
+            $bamount = ($key['BAMOUNT']/100);
             $data = [
                 'BANKID' => '013', //銀行代號 先寫死
                 'BACCNO' => $key['BACCNO'], //銀行帳號
@@ -148,8 +151,8 @@ class BankRequestService
                 'TXIDNO' => $key['TX_IDNO'] ?? '',//交易代號
                 'CHKNO' => !empty($key['CHNO']) ? $key['CHNO'] : '',//支票號碼
                 'DC' => !empty($key['DC']) ? $key['DC'] : '',//借貸
-                'AMOUNT' => $key['AMOUNT'], //交易金額
-                'BAMOUNT' => $key['BAMOUNT'], //帳戶餘額
+                'AMOUNT' => $amount, //交易金額
+                'BAMOUNT' => $bamount, //帳戶餘額
                 'MEMO1' => !empty($key['MEMO1']) ? $key['MEMO1'] : '',//備註一
                 'MEMO2' => !empty($key['MEMO2']) ? $key['MEMO2'] : '',//備註二
                 'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行

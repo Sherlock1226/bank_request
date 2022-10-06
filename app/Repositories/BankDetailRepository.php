@@ -4,10 +4,9 @@ namespace App\Repositories;
 
 use App\Interfaces\EloquentRepositoryInterface;
 use App\Models\BankDetail;
-use http\Exception;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BankDetailRepository extends BaseRepository implements EloquentRepositoryInterface
@@ -31,7 +30,7 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
     /**
      * @param array $data
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveData(array $data): JsonResponse
     {
@@ -39,8 +38,8 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
 
             $this->create($data);
 
-        } catch (\Exception $e) {
-            Log::error($e->getMessage().' '.$data['TXSEQNO']);
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . ' ' . $data['TXSEQNO']);
             return response()->json([
                 'error' => 'Cannot excecute insert',
                 'msg' => $e->getMessage(),
@@ -56,7 +55,7 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
     /**
      * @param array $data
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getData(array $data): JsonResponse
     {
@@ -67,15 +66,15 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
                 ->whereDate('TXDATE', '<=', $data['to_date'])
                 ->get();
 
-        } catch (\Exception $e) {
-            Log::error($e->getMessage().' '.$data['TXSEQNO']);
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . ' ' . $data['TXSEQNO']);
             return response()->json([
                 'error' => 'Cannot excecute query',
                 'msg' => $e->getMessage(),
             ], 422);
         }
 
-        return response()->json( $rs , 200);
+        return response()->json($rs, 200);
     }
 
 }

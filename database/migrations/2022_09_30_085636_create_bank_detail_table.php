@@ -16,16 +16,16 @@ class CreateBankDetailTable extends Migration
         Schema::create('bank_detail', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->integer('BANKID')->nullable()->comment('銀行代號');
+            $table->string('BANKID')->nullable()->comment('銀行代號');
             $table->bigInteger('BACCNO')->comment('銀行帳號');
             $table->date('TXDATE')->comment('交易日期');
             $table->string('TXTIME')->comment('交易時間 (hhmmssss)');
             $table->string('TXSEQNO')->unique()->comment('交易序號');
             $table->string('TXIDNO')->comment('交易代號');
             $table->string('CHKNO')->nullable()->comment('支票號碼');
-            $table->integer('AMOUNT')->comment('交易金額');
+            $table->double('AMOUNT', 15, 2)->comment('交易金額');
             $table->string('SIGN')->comment('交易金額正負號');
-            $table->integer('BAMOUNT')->comment('帳戶餘額');
+            $table->double('BAMOUNT', 15, 2)->comment('帳戶餘額');
             $table->string('BSIGN')->comment('帳戶餘額正負號');
             $table->string('MEMO1')->nullable()->comment('備註一');
             $table->string('MEMO2')->nullable()->comment('備註二');
