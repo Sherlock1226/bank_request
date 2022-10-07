@@ -6,6 +6,9 @@ use App\Models\BankAcc;
 use App\Repositories\BankDetailRepository;
 
 //use Illuminate\Http\Request;
+use Exception;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -132,7 +135,7 @@ class BankRequestService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function insertBankDetail(array $bankRSdata): JsonResponse
     {
@@ -169,9 +172,10 @@ class BankRequestService
     }
 
     /**
-     * @throws \Exception
+     * @param array $args
+     * @return array|Builder[]|Collection
      */
-    public function getBankDetail(array $args): JsonResponse
+    public function getBankDetail(array $args)
     {
         $from_date = date('Y-m-d', strtotime($args['from_date'])) ?? date('Ymd', strtotime("-1 days"));
         $to_date = date('Y-m-d', strtotime($args['to_date'])) ?? date('Ymd', strtotime("-1 days"));
@@ -182,9 +186,7 @@ class BankRequestService
             'bank_acc' => $args['bank_acc']
         ];
 
-        $rs = $this->bankDetailRepository->getData($data);
-
-        return $rs;
+        return $this->bankDetailRepository->getData($data);
     }
 
 

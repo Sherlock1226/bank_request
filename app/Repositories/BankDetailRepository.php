@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Interfaces\EloquentRepositoryInterface;
 use App\Models\BankDetail;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -54,13 +56,13 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
 
     /**
      * @param array $data
-     * @return JsonResponse
-     * @throws Exception
+     * @return array|Builder[]|Collection
      */
-    public function getData(array $data): JsonResponse
+
+    public function getData(array $data)
     {
         try {
-            $rs = $this->model->query()
+            return $this->model->query()
                 ->where('BACCNO', $data['bank_acc'])
                 ->whereDate('TXDATE', '>=', $data['from_date'])
                 ->whereDate('TXDATE', '<=', $data['to_date'])
@@ -68,13 +70,12 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
 
         } catch (Exception $e) {
             Log::error($e->getMessage() . ' ' . $data['TXSEQNO']);
-            return response()->json([
+            return [
                 'error' => 'Cannot excecute query',
                 'msg' => $e->getMessage(),
-            ], 422);
+            ];
         }
 
-        return response()->json($rs, 200);
     }
 
 }

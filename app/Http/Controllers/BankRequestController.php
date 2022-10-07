@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\BankDetailExport;
+use App\Exports\BankDetailMultipleSheets;
 use App\Models\BankAcc;
 
 use Exception;
@@ -85,7 +85,7 @@ class BankRequestController extends Controller
 
             if ($code['error_id'] == 0 && empty($code['error_msg'])) {
 
-               $this->bankRequestService->insertBankDetail($array['TXDETAIL']);
+                $this->bankRequestService->insertBankDetail($array['TXDETAIL']);
 
             } else {
                 echo $code['error_msg'];
@@ -141,7 +141,7 @@ class BankRequestController extends Controller
 //
 //    }
 
-    public function getDetail()
+    public function getDetail($args)
     {
         $response = [];
         try {
@@ -169,15 +169,21 @@ class BankRequestController extends Controller
 
             $args = [
                 'from_date' => 20220906,
-                'to_date' => 20221006,
+                'to_date' => 20220920,
                 'bank_acc' => '048087009559'
             ];
-            return Excel::download(new BankDetailExport($args), 'bank.xlsx');
+
+            $bd = $this->getDetail($args);
+            $array = json_decode(json_encode($bd), true);
+
+            $cur = array_column($array,'CURY','CURY');
+            return Excel::download(new BankDetailMultipleSheets($args, $cur), 'bank.xlsx');
         } catch (Exception $e) {
             Log::error($e->getMessage());
             dd($e);
         }
     }
+
 
     /**
      * @return BankAcc[]|array|Collection

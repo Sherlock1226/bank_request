@@ -3,62 +3,82 @@
 namespace App\Exports;
 
 use App\Models\BankDetail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 
 class BankDetailExport implements
-    FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithEvents,
-    ShouldAutoSize, WithColumnWidths
+     WithHeadings, WithMapping, WithColumnFormatting, WithEvents,
+    ShouldAutoSize, WithColumnWidths, WithTitle,FromQuery,FromCollection
 
 {
-    /**
-     * @return Collection
-     */
+
+    use Exportable;
 
     protected $data;
 
     //建構函式傳值
     protected $collection;
+    protected $cur;
 
-    public function __construct($data)
+    public function __construct($data,$cur)
     {
         $this->data = $data;
+        $this->cur  = $cur;
     }
 
     //陣列轉集合
-    public function collection()
+    public function collection(): Collection
     {
-        return new Collection($this->createData());
+        return new Collection($this->query());
     }
 
     //業務程式碼
-    public function createData()
-    {
+//    public function createData()
+//    {
+//
+//        $from_date = date('Y-m-d', strtotime($this->data['from_date'])) ?? date('Ymd', strtotime("-1 days"));
+//        $to_date = date('Y-m-d', strtotime($this->data['to_date'])) ?? date('Ymd', strtotime("-1 days"));
+//
+//        //todo 業務
+//        return BankDetail::query()
+//            ->where('BACCNO', $this->data['bank_acc'])
+//            ->where('CURY', $this->cur)
+//            ->whereDate('TXDATE', '>=', $from_date)
+//            ->whereDate('TXDATE', '<=', $to_date)
+//            ->get();
+//
+//    }
 
+    /**
+     * @return Builder[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function query()
+    {
         $from_date = date('Y-m-d', strtotime($this->data['from_date'])) ?? date('Ymd', strtotime("-1 days"));
         $to_date = date('Y-m-d', strtotime($this->data['to_date'])) ?? date('Ymd', strtotime("-1 days"));
 
-        //todo 業務
+
         return BankDetail::query()
             ->where('BACCNO', $this->data['bank_acc'])
+            ->where('CURY', $this->cur)
             ->whereDate('TXDATE', '>=', $from_date)
             ->whereDate('TXDATE', '<=', $to_date)
             ->get();
 
-
-//        return json_decode($this->data,true);
     }
 
     /**
@@ -78,23 +98,6 @@ class BankDetailExport implements
 //            ['日期', '銀行帳號', '交易序號', '交易代號', '支票號碼', '交易金額正負號', '交易金額', '帳戶餘額正負號', '帳戶餘額', '備註一', '備註二', '幣別', '交易說明']
 
         ];
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function styles(Worksheet $sheet)
-    {
-
-        //合併第一列
-        $sheet->mergeCells("A1:F1");
-        $sheet->mergeCells("A2:F2");
-
-        //在第一格中寫入的相關資料
-        $sheet->setCellValue("A1", '偉柏工業');
-        //在第二格中寫入的相關資料
-        $sheet->setCellValue("A2", "銀行名稱：國泰世華");
-
     }
 
     /**
@@ -120,29 +123,13 @@ class BankDetailExport implements
         ];
     }
 
-
-//    /**
-//     * @var BankDetail $bankDetail
-//     */
-//    public function map($bankDetail): array
-//    {
-//        // TODO: Implement map() method.
-//        return [
-//            $bankDetail->TXDATE,
-//            $bankDetail->BACCNO,
-//            $bankDetail->TXSEQNO,
-//            $bankDetail->TXIDNO,
-//            $bankDetail->CHKNO,
-//            $bankDetail->SIGN,
-//            $bankDetail->AMOUNT,
-//            $bankDetail->BSIGN,
-//            $bankDetail->BAMOUNT,
-//            $bankDetail->MEMO1,
-//            $bankDetail->MEMO2,
-//            $bankDetail->CURY,
-//            $bankDetail->TX_SPEC,
-//        ];
-//    }
+    /**
+     * @return string
+     */
+    public function title(): string
+    {
+        return $this->cur;
+    }
 
     public function columnFormats(): array
     {
@@ -196,11 +183,4 @@ class BankDetailExport implements
     }
 
 
-//    public function view(): View
-//    {
-//        // TODO: Implement view() method.
-//        return view('exports.bankDetail', [
-//            'bankDetail' => $this->createData()
-//        ]);
-//    }
 }
