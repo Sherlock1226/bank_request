@@ -63,7 +63,6 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
     {
         try {
             return $this->model->query()
-                ->where('BACCNO', $data['bank_acc'])
                 ->whereDate('TXDATE', '>=', $data['from_date'])
                 ->whereDate('TXDATE', '<=', $data['to_date'])
                 ->get();

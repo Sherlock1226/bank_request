@@ -128,7 +128,7 @@ class BankDetailExport implements
      */
     public function title(): string
     {
-        return $this->cur;
+        return $this->data['bank_acc'].'-'.$this->cur;
     }
 
     public function columnFormats(): array

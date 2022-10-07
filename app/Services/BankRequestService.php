@@ -50,7 +50,7 @@ class BankRequestService
 
         $from_date = $args['from_date'] ?? date('Ymd', strtotime("-1 days"));
         $to_date = $args['to_date'] ?? date('Ymd', strtotime("-1 days"));
-        $acno = $args['acno'] ?? '048087009559';
+        $acno = $args['acno'] ?? '33087127783';
 
         $config = [
             'url' => 'https://www.GlobalMyB2B.com/securities/TX10F0_TXT.aspx',
@@ -183,7 +183,6 @@ class BankRequestService
         $data = [
             'from_date' => $from_date,
             'to_date' => $to_date,
-            'bank_acc' => $args['bank_acc']
         ];
 
         return $this->bankDetailRepository->getData($data);

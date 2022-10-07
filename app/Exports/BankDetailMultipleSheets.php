@@ -18,14 +18,20 @@ class BankDetailMultipleSheets implements WithMultipleSheets
 
 
 
+
     /**
      * @return array
      */
     public function sheets(): array
     {
         $sheets = [];
+
         foreach ($this->cur as $k => $v){
-            $sheets[] = new BankDetailExport($this->data,$v);
+            foreach ($v as $value){
+                $this->data['bank_acc'] = $k;
+                $sheets[] = new BankDetailExport($this->data,$value);
+            }
+
         }
 
         return $sheets;

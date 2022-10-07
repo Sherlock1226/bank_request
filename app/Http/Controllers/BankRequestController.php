@@ -147,11 +147,10 @@ class BankRequestController extends Controller
         try {
 //            $args = $request->all();
 
-            $args = [
-                'from_date' => 20220906,
-                'to_date' => 20221006,
-                'bank_acc' => '048087009559'
-            ];
+//            $args = [
+//                'from_date' => 20220906,
+//                'to_date' => 20221006,
+//            ];
 
             $response = $this->bankRequestService->getBankDetail($args);
         } catch (Exception $e) {
@@ -168,15 +167,27 @@ class BankRequestController extends Controller
             //$args = $request->all();
 
             $args = [
-                'from_date' => 20220906,
-                'to_date' => 20220920,
-                'bank_acc' => '048087009559'
+                'from_date' => 20220926,
+                'to_date' => 20221001,
+//                'bank_acc' => '048087009559'
             ];
 
             $bd = $this->getDetail($args);
             $array = json_decode(json_encode($bd), true);
-
-            $cur = array_column($array,'CURY','CURY');
+//            print_r($array);
+//            $da = [];
+//            foreach ($array as $k => $v) {
+//                $da[$k][] = $v['CURY'];
+////                if (!in_array($v['CURY'],$da[$k])) {
+////                    $da[$k][] = $v['CURY'];
+////                }
+//            }
+//
+//            print_r($da);
+//            dd($da);
+            $cur = [
+               '48087009559' => ['02'], '33087127783' => ['02','07']
+            ];
             return Excel::download(new BankDetailMultipleSheets($args, $cur), 'bank.xlsx');
         } catch (Exception $e) {
             Log::error($e->getMessage());
