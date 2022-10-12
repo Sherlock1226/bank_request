@@ -2,9 +2,11 @@
 
 namespace App\Exports;
 
+use App\Models\BankAcc;
 use App\Models\BankDetail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -33,11 +35,13 @@ class BankDetailExport implements
     //建構函式傳值
     protected $collection;
     protected $cur;
+    private $bankAcc;
 
-    public function __construct($data,$cur)
+    public function __construct($data,$cur,$bankAcc)
     {
         $this->data = $data;
         $this->cur  = $cur;
+        $this->bankAcc = $bankAcc;
     }
 
     //陣列轉集合
@@ -46,22 +50,6 @@ class BankDetailExport implements
         return new Collection($this->query());
     }
 
-    //業務程式碼
-//    public function createData()
-//    {
-//
-//        $from_date = date('Y-m-d', strtotime($this->data['from_date'])) ?? date('Ymd', strtotime("-1 days"));
-//        $to_date = date('Y-m-d', strtotime($this->data['to_date'])) ?? date('Ymd', strtotime("-1 days"));
-//
-//        //todo 業務
-//        return BankDetail::query()
-//            ->where('BACCNO', $this->data['bank_acc'])
-//            ->where('CURY', $this->cur)
-//            ->whereDate('TXDATE', '>=', $from_date)
-//            ->whereDate('TXDATE', '<=', $to_date)
-//            ->get();
-//
-//    }
 
     /**
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection
@@ -95,8 +83,6 @@ class BankDetailExport implements
             [' 日   期 ', ' 摘  要 ', '支   出(借)', '存   入(貸)', '結   存'],
             ['上年度結轉餘額'],
 
-//            ['日期', '銀行帳號', '交易序號', '交易代號', '支票號碼', '交易金額正負號', '交易金額', '帳戶餘額正負號', '帳戶餘額', '備註一', '備註二', '幣別', '交易說明']
-
         ];
     }
 
@@ -128,7 +114,7 @@ class BankDetailExport implements
      */
     public function title(): string
     {
-        return $this->data['bank_acc'].'-'.$this->cur;
+        return mb_substr($this->bankAcc['BANKNAME'],0,2).'#'.substr($this->data['bank_acc'],-7).'('.$this->bankAcc['ACCNAME_A'].')'.'-'.$this->cur;
     }
 
     public function columnFormats(): array
@@ -167,8 +153,8 @@ class BankDetailExport implements
                 //设置区域单元格垂直居中
                 $event->sheet->getDelegate()->getStyle('A1:K1265')->getAlignment()->setVertical('center');
 
-                $event->sheet->setCellValue("A1", '偉柏工業');
-                $event->sheet->setCellValue("A2", "銀行名稱：國泰世華");
+                $event->sheet->setCellValue("A1", $this->bankAcc['ACCNAME']);
+                $event->sheet->setCellValue("A2", "銀行名稱： ".$this->bankAcc['BANKNAME']);
                 $event->sheet->setCellValue("C2", $this->data['bank_acc']);
 
                 $event->sheet->getDelegate()->getStyle('A4:E4')
@@ -181,6 +167,7 @@ class BankDetailExport implements
             },
         ];
     }
+
 
 
 }

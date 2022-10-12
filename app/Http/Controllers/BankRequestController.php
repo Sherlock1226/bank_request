@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\BankRequestService;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -35,7 +36,7 @@ class BankRequestController extends Controller
     {
         try {
             $args = $request->all();
-
+            $date = $request->input('dateFrom');
             $args = [
                 'from_date' => 20220901,
                 'to_date' => 20220921,
@@ -74,8 +75,8 @@ class BankRequestController extends Controller
             $args = [
                 'from_date' => 20220901,
                 'to_date' => 20221003,
+                'acno' => '48087009559'
             ];
-
 
             $response = $this->bankRequestService->getBankResponse($args);
             $xml = simplexml_load_string($response);
@@ -99,58 +100,11 @@ class BankRequestController extends Controller
 
     }
 
-//    public function callBank(Request $request): JsonResponse
-//    {
-//        try {
-//
-////            $args = $request->all();
-//
-//            $accno = $this->getBankAcc();
-//
-//            foreach ($accno as $k) {
-//                $args = [
-//                    'from_date' => 20220901,
-//                    'to_date' => 20221006,
-//                    'acno' => (string)$k['BACCNO']
-//                ];
-//
-//                print_r($args);
-//                $response = $this->bankRequestService->getBankResponse($args);
-//                $xml = simplexml_load_string($response);
-//                $code = $xml->attributes();
-//
-//                $array = json_decode(json_encode($xml), TRUE);
-//
-//                if ($code['error_id'] != 0 && !empty($code['error_msg'])) {
-//                    Log::warning(json_encode($args) . $code['error_msg']);
-//                }
-//
-//                $rs_db = $this->bankRequestService->insertBankDetail($array['TXDETAIL']);
-//                sleep(180);
-//            }
-//
-//        } catch (Exception $e) {
-//            Log::error($e);
-//            return response()->json([
-//                'error' => 'Cannot excecute',
-//                'msg' => $e->getMessage(),
-//            ], 422);
-//        }
-//
-//        return response()->json(['success'], 200);
-//
-//    }
 
     public function getDetail($args)
     {
         $response = [];
         try {
-//            $args = $request->all();
-
-//            $args = [
-//                'from_date' => 20220906,
-//                'to_date' => 20221006,
-//            ];
 
             $response = $this->bankRequestService->getBankDetail($args);
         } catch (Exception $e) {
@@ -161,33 +115,35 @@ class BankRequestController extends Controller
 
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            //$args = $request->all();
+            $args = $request->all();
 
-            $args = [
-                'from_date' => 20220926,
-                'to_date' => 20221001,
-//                'bank_acc' => '048087009559'
-            ];
+            $validator = Validator::make($request->all(),[
+                'from_date' => 'required',
+                'to_date' => 'required|after_or_equal:from_date',
+            ]);
 
+            if($validator->fails()) {
+                return redirect('/bankdetailexport')
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             $bd = $this->getDetail($args);
+
             $array = json_decode(json_encode($bd), true);
-//            print_r($array);
-//            $da = [];
-//            foreach ($array as $k => $v) {
-//                $da[$k][] = $v['CURY'];
-////                if (!in_array($v['CURY'],$da[$k])) {
-////                    $da[$k][] = $v['CURY'];
-////                }
-//            }
-//
-//            print_r($da);
-//            dd($da);
-            $cur = [
-               '48087009559' => ['02'], '33087127783' => ['02','07']
-            ];
+            if(empty($array)){
+                return '無交易紀錄';
+            }
+            $da = $cur =[];
+            foreach ($array as $k ) {
+                $da[$k['BACCNO']][] = $k['CURY'];
+            }
+            foreach ($da as $k => $v){
+                $cur[$k] = array_unique($v);    //去重：去掉重复的字符串
+            }
+
             return Excel::download(new BankDetailMultipleSheets($args, $cur), 'bank.xlsx');
         } catch (Exception $e) {
             Log::error($e->getMessage());
@@ -213,5 +169,21 @@ class BankRequestController extends Controller
         return $rs;
     }
 
+    /**
+     * @return BankAcc[]|array|Collection
+     */
+    public function getBankAccByAccNum()
+    {
+        $rs = [];
+        try {
+            $bankAcc = new BankAcc;
+            $rs = $bankAcc->all();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return $rs;
+    }
 
 }

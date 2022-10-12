@@ -141,10 +141,18 @@ class BankRequestService
     {
 
         $rs = [];
-
+        $cury = [
+            '01' => 'TWD',
+            '02' => 'USD',
+            '03' => 'HKD',
+            '05' => 'GBP',
+            '07' => 'AUD',
+            '11' => 'CAD',
+        ];
         foreach ($bankRSdata as $key) {
             $amount = ($key['AMOUNT']/100);
             $bamount = ($key['BAMOUNT']/100);
+
             $data = [
                 'BANKID' => '013', //銀行代號 先寫死
                 'BACCNO' => $key['BACCNO'], //銀行帳號
@@ -160,7 +168,7 @@ class BankRequestService
                 'MEMO2' => !empty($key['MEMO2']) ? $key['MEMO2'] : '',//備註二
                 'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行
                 'ACCNAME' => !empty($key['ACCNAME']) ? $key['ACCNAME'] : '',//戶名
-                'CURY' => $key['CURY'],//幣別
+                'CURY' => $cury[$key['CURY']] ?? $key['CURY'],//幣別
                 'SIGN' => $key['SIGN'],//交易金額正負號
                 'BSIGN' => $key['BSIGN'],//帳戶餘額正負號
                 'TX_SPEC' => !empty($key['TX_SPEC']) ? $key['TX_SPEC'] : '',//交易說明
