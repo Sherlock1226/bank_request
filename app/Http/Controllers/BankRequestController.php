@@ -67,7 +67,7 @@ class BankRequestController extends Controller
 
     }
 
-    public function callBank(Request $request): JsonResponse
+    public function callBank(array $data)
     {
         try {
 //            $args = $request->all();
@@ -75,7 +75,7 @@ class BankRequestController extends Controller
             $args = [
                 'from_date' => 20220901,
                 'to_date' => 20221003,
-                'acno' => '48087009559'
+                'acno' => $data['acno']
             ];
 
             $response = $this->bankRequestService->getBankResponse($args);
@@ -85,7 +85,6 @@ class BankRequestController extends Controller
             $array = json_decode(json_encode($xml), TRUE);
 
             if ($code['error_id'] == 0 && empty($code['error_msg'])) {
-
                 $this->bankRequestService->insertBankDetail($array['TXDETAIL']);
 
             } else {
@@ -95,8 +94,6 @@ class BankRequestController extends Controller
         } catch (Exception $e) {
             Log::error($e);
         }
-
-        return response()->json(['success'], 200);
 
     }
 

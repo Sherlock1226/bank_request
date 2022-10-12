@@ -148,6 +148,9 @@ class BankRequestService
             '05' => 'GBP',
             '07' => 'AUD',
             '11' => 'CAD',
+            '29' => 'CNY',
+            '30' => 'EUR',
+
         ];
         foreach ($bankRSdata as $key) {
             $amount = ($key['AMOUNT']/100);
