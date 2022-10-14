@@ -28,7 +28,8 @@ Route::get('/callbank', 'App\Http\Controllers\BankRequestController@callBank');
 Route::get('/sap', 'App\Http\Controllers\SapController@loginSap');
 Route::post('/export', 'App\Http\Controllers\BankRequestController@export');
 Route::get('/getDetail', 'App\Http\Controllers\BankRequestController@getDetail');
-Route::get('/Test', 'App\Http\Controllers\EasyTestController@Test');
+Route::any('/Test', 'App\Http\Controllers\EasyTestController@Test');
+Route::any('/manualcallBank', 'App\Http\Controllers\BankRequestController@manualcallBank');
 
 
 Route::get('bankdetailexport', function()

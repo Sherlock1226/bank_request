@@ -7,7 +7,6 @@ use App\Models\BankAcc;
 
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\BankRequestService;
@@ -150,7 +149,7 @@ class BankRequestController extends Controller
             $bankAcc = new BankAcc;
             $rs = $bankAcc->all();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e->getMessage());
         }
 
@@ -167,11 +166,35 @@ class BankRequestController extends Controller
             $bankAcc = new BankAcc;
             $rs = $bankAcc->all();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e->getMessage());
         }
 
         return $rs;
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function manualcallBank(Request $request)
+    {
+
+        try {
+            $args = $request->all();
+            $data = [
+                'from_date' => $args['from'],
+                'to_date' => $args['to'],
+                'acno' => $args['acno']
+            ];
+            echo json_encode($data);
+            $this->callBank($data);
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+        }
+
     }
 
 }
