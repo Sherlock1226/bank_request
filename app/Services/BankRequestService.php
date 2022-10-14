@@ -135,12 +135,12 @@ class BankRequestService
     }
 
     /**
-     * @throws Exception
+     * @param array $bankRSdata
+     * @return void
      */
-    public function insertBankDetail(array $bankRSdata): JsonResponse
+    public function insertBankDetail(array $bankRSdata)
     {
 
-        $rs = [];
         $cury = [
             '01' => 'TWD',
             '02' => 'USD',
@@ -152,34 +152,49 @@ class BankRequestService
             '30' => 'EUR',
 
         ];
-        foreach ($bankRSdata as $key) {
-            $amount = ($key['AMOUNT']/100);
-            $bamount = ($key['BAMOUNT']/100);
-
-            $data = [
-                'BANKID' => '013', //銀行代號 先寫死
-                'BACCNO' => $key['BACCNO'], //銀行帳號
-                'TXDATE' => Carbon::parse((string)$key['TX_DATE'])->format('Y-m-d'), //交易日期
-                'TXTIME' => $key['TX_TIME'], //交易時間 (hhmmssss)
-                'TXSEQNO' => $key['TX_SEQNO'] ?? '', //交易序號
-                'TXIDNO' => $key['TX_IDNO'] ?? '',//交易代號
-                'CHKNO' => !empty($key['CHNO']) ? $key['CHNO'] : '',//支票號碼
-                'DC' => !empty($key['DC']) ? $key['DC'] : '',//借貸
-                'AMOUNT' => $amount, //交易金額
-                'BAMOUNT' => $bamount, //帳戶餘額
-                'MEMO1' => !empty($key['MEMO1']) ? $key['MEMO1'] : '',//備註一
-                'MEMO2' => !empty($key['MEMO2']) ? $key['MEMO2'] : '',//備註二
-                'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行
-                'ACCNAME' => !empty($key['ACCNAME']) ? $key['ACCNAME'] : '',//戶名
-                'CURY' => $cury[$key['CURY']] ?? $key['CURY'],//幣別
-                'SIGN' => $key['SIGN'],//交易金額正負號
-                'BSIGN' => $key['BSIGN'],//帳戶餘額正負號
-                'TX_SPEC' => !empty($key['TX_SPEC']) ? $key['TX_SPEC'] : '',//交易說明
-            ];
-            $rs = $this->bankDetailRepository->saveData($data);
+        //回來只有1筆格式跟多筆不一樣
+        if (!isset($bankRSdata[1])) {
+            $bankDetail = $bankRSdata;
+            unset($bankRSdata);
+            $bankRSdata[0] = $bankDetail;
         }
 
-        return $rs;
+        foreach ($bankRSdata as $key) {
+            //先查有沒有,沒有才新增
+            $qu_data = [
+                'TXDATE' => Carbon::parse((string)$key['TX_DATE'])->format('Y-m-d'),
+                'TXSEQNO' => $key['TX_SEQNO'],
+                'BACCNO' => $key['BACCNO']
+            ];
+            $rs = $this->getBankDetailBySeq($qu_data);
+            if ($rs < 1) {
+                $amount = (intval($key['AMOUNT']) / 100);
+                $bamount = (intval($key['BAMOUNT']) / 100);
+
+                $data = [
+                    'BANKID' => '013', //銀行代號 先寫死
+                    'BACCNO' => $key['BACCNO'], //銀行帳號
+                    'TXDATE' => Carbon::parse((string)$key['TX_DATE'])->format('Y-m-d'), //交易日期
+                    'TXTIME' => $key['TX_TIME'], //交易時間 (hhmmssss)
+                    'TXSEQNO' => $key['TX_SEQNO'] ?? '', //交易序號
+                    'TXIDNO' => $key['TX_IDNO'] ?? '',//交易代號
+                    'CHKNO' => !empty($key['CHNO']) ? $key['CHNO'] : '',//支票號碼
+                    'DC' => !empty($key['DC']) ? $key['DC'] : '',//借貸
+                    'AMOUNT' => $amount, //交易金額
+                    'BAMOUNT' => $bamount, //帳戶餘額
+                    'MEMO1' => !empty($key['MEMO1']) ? $key['MEMO1'] : '',//備註一
+                    'MEMO2' => !empty($key['MEMO2']) ? $key['MEMO2'] : '',//備註二
+                    'XBANKID' => !empty($key['BANKID']) ? $key['BANKID'] : '',//對方行
+                    'ACCNAME' => !empty($key['ACCNAME']) ? $key['ACCNAME'] : '',//戶名
+                    'CURY' => $cury[$key['CURY']] ?? $key['CURY'],//幣別
+                    'SIGN' => $key['SIGN'],//交易金額正負號
+                    'BSIGN' => $key['BSIGN'],//帳戶餘額正負號
+                    'TX_SPEC' => !empty($key['TX_SPEC']) ? $key['TX_SPEC'] : '',//交易說明
+                ];
+                $this->bankDetailRepository->saveData($data);
+            }
+
+        }
     }
 
     /**
@@ -197,6 +212,21 @@ class BankRequestService
         ];
 
         return $this->bankDetailRepository->getData($data);
+    }
+
+    /**
+     * @param array $args
+     * @return array|int
+     */
+    public function getBankDetailBySeq(array $args)
+    {
+
+        $data = [
+            'TXDATE' => $args['TXDATE'],
+            'TXSEQNO' => $args['TXSEQNO'],
+            'BACCNO' => $args['BACCNO']
+        ];
+        return $this->bankDetailRepository->getDataBySeq($data);
     }
 
 

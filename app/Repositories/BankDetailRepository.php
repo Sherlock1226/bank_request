@@ -31,27 +31,15 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
 
     /**
      * @param array $data
-     * @return JsonResponse
-     * @throws Exception
+     * @return void
      */
-    public function saveData(array $data): JsonResponse
+    public function saveData(array $data)
     {
         try {
-
             $this->create($data);
-
         } catch (Exception $e) {
-            Log::error($e->getMessage() . ' ' . $data['TXSEQNO']);
-            return response()->json([
-                'error' => 'Cannot excecute insert',
-                'msg' => $e->getMessage(),
-                'TXSEQNO' => $data['TXSEQNO'],
-            ], 422);
+            Log::error($e->getMessage() . ' ' . json_encode($data));
         }
-
-        return response()->json([
-            'msg' => 'success',
-        ], 200);
     }
 
     /**
@@ -74,7 +62,29 @@ class BankDetailRepository extends BaseRepository implements EloquentRepositoryI
                 'msg' => $e->getMessage(),
             ];
         }
+    }
 
+    /**
+     * @param array $data
+     * @return array|int
+     */
+
+    public function getDataBySeq(array $data)
+    {
+        try {
+            return $this->model->query()
+                ->whereDate('TXDATE', '=', $data['TXDATE'])
+                ->where('TXSEQNO', '=', $data['TXSEQNO'])
+                ->where('BACCNO', '=', $data['BACCNO'])
+                ->count();
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . ' ' . $data['TXSEQNO']);
+            return [
+                'error' => 'Cannot excecute query',
+                'msg' => $e->getMessage(),
+            ];
+        }
     }
 
 }

@@ -20,7 +20,7 @@ class CreateBankDetailTable extends Migration
             $table->string('BACCNO')->comment('銀行帳號');
             $table->date('TXDATE')->comment('交易日期');
             $table->string('TXTIME')->comment('交易時間 (hhmmssss)');
-            $table->string('TXSEQNO')->unique()->comment('交易序號');
+            $table->string('TXSEQNO')->comment('交易序號');
             $table->string('TXIDNO')->comment('交易代號');
             $table->string('CHKNO')->nullable()->comment('支票號碼');
             $table->double('AMOUNT', 15, 2)->comment('交易金額');
@@ -29,7 +29,7 @@ class CreateBankDetailTable extends Migration
             $table->string('BSIGN')->comment('帳戶餘額正負號');
             $table->string('MEMO1')->nullable()->comment('備註一');
             $table->string('MEMO2')->nullable()->comment('備註二');
-            $table->string('XBANKID')->nullable()->nullable()->comment('對方行');
+            $table->string('XBANKID')->nullable()->comment('對方行');
             $table->string('CURY')->comment('幣別');
             $table->string('DC')->nullable()->comment('借貸別1:借;2:貸(存)');
             $table->string('TX_SPEC')->nullable()->comment('交易說明');

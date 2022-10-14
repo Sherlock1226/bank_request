@@ -18,13 +18,11 @@ use Maatwebsite\Excel\Facades\Excel;
 class BankRequestController extends Controller
 {
 
-    protected $bankRequestService;
+    public $bankRequestService;
 
 
     /**
-     * 建立一個新的控制器實例
-     *
-     * @return void
+     * @param BankRequestService $bankRequestService
      */
     public function __construct(BankRequestService $bankRequestService)
     {
@@ -56,8 +54,6 @@ class BankRequestController extends Controller
 
             $sap_data = $this->bankRequestService->argSAPData($array['TXDETAIL']);
 
-            print_r($sap_data);
-
 
         } catch (Exception $e) {
             Log::error($e);
@@ -70,29 +66,24 @@ class BankRequestController extends Controller
     public function callBank(array $data)
     {
         try {
-//            $args = $request->all();
 
-            $args = [
-                'from_date' => 20220901,
-                'to_date' => 20221003,
-                'acno' => $data['acno']
-            ];
-
-            $response = $this->bankRequestService->getBankResponse($args);
+            Log::info(json_encode($data));
+            $response = $this->bankRequestService->getBankResponse($data);
             $xml = simplexml_load_string($response);
             $code = $xml->attributes();
 
             $array = json_decode(json_encode($xml), TRUE);
+            Log::info($array);
 
             if ($code['error_id'] == 0 && empty($code['error_msg'])) {
                 $this->bankRequestService->insertBankDetail($array['TXDETAIL']);
-
             } else {
                 echo $code['error_msg'];
+                throw new Exception($code['error_msg']);
             }
 
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e.''.json_encode($array));
         }
 
     }

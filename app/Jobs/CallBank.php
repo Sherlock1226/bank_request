@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\BankRequestController;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+
 
 class CallBank implements ShouldQueue
 {
@@ -35,15 +35,17 @@ class CallBank implements ShouldQueue
      */
     public function handle()
     {
+
+        Log::info('CallBank handle');
         $args = [
-            'from_date' => 20220901,
-            'to_date' => 20221003,
             'acno' => $this->bankAcc
         ];
+        $this->release(300);
 
-       (new \App\Http\Controllers\BankRequestController)->callBank($args);
+        app(\App\Http\Controllers\BankRequestController::class)->callBank($args);
+        Log::info('CallBank release');
+        Log::info('CallBank end');
     }
-
 
 
 }
