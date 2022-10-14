@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\CallBank;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -44,9 +45,8 @@ class CallBankJob extends Command
             ->where('BANKID', '013')->get();
         $array = json_decode(json_encode($data), true);
 
-        print_r($array);
         foreach ($array as $k){
-            CallBank::dispatch($k['BACCNO'])->delay(60 * 4);
+            CallBank::dispatch($k['BACCNO'])->delay(Carbon::now()->addSeconds(180))->onQueue('callbank'.$k['BACCNO']);;
         }
     }
 
