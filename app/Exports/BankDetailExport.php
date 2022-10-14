@@ -65,7 +65,7 @@ class BankDetailExport implements
             ->where('CURY', $this->cur)
             ->whereDate('TXDATE', '>=', $from_date)
             ->whereDate('TXDATE', '<=', $to_date)
-            ->orderBy('TXDATE','DESC')
+            ->orderBy('TXDATE','ASC')
             ->get();
 
     }
