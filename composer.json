@@ -16,7 +16,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
-        "seblhaire/daterangepickerhelper": "^2.1"
+        "seblhaire/daterangepickerhelper": "^2.1",
+      "ext-ssh2": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

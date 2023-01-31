@@ -30,6 +30,7 @@ Route::post('/export', 'App\Http\Controllers\BankRequestController@export');
 Route::get('/getDetail', 'App\Http\Controllers\BankRequestController@getDetail');
 Route::any('/Test', 'App\Http\Controllers\EasyTestController@Test');
 Route::any('/manualcallBank', 'App\Http\Controllers\BankRequestController@manualcallBank');
+Route::any('/megaBank', 'App\Http\Controllers\MegaBankController@callsFtp');
 
 
 Route::get('bankdetailexport', function()
